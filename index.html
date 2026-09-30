@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Internal Tool</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Bebas+Neue&family=Roboto+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --orange:   #EF8B22;
+    --gray:     #53575A;
+    --blue:     #0979C3;
+    --dark:     #27343D;
+    --light:    #F6F6F6;
+    --white:    #FFFFFF;
+    --success:  #69995D;
+    --error:    #CC0100;
+
+    --ink:      #27343D;
+    --ink-2:    #53575A;
+    --muted:    #7A8188;
+    --line:     #E2E5E7;
+    --line-2:   #C7CCD0;
+    --surface:  #FFFFFF;
+    --ground:   #F6F6F6;
+    --orange-soft: #FDF1E4;
+    --blue-soft:   #E7F2FA;
+    --green-soft:  #EDF3EB;
+    --red-soft:    #FBEAEA;
+
+    --f-display: 'Bebas Neue', 'Roboto', sans-serif;
+    --f-body:    'Roboto', -apple-system, sans-serif;
+    --f-mono:    'Roboto Mono', ui-monospace, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #EDF0F2; --ink-2: #C2C8CC; --muted: #8B9399;
+      --line: #333C44; --line-2: #47525A;
+      --surface: #1D262D; --ground: #141B21;
+      --orange-soft: #33220F; --blue-soft: #10222F;
+      --green-soft: #17251400; --green-soft: #1A2418; --red-soft: #2C1414;
+      --orange: #F5A04A; --blue: #4FA3DC; --success: #86BC79; --error: #E86B6A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #EDF0F2; --ink-2: #C2C8CC; --muted: #8B9399;
+    --line: #333C44; --line-2: #47525A;
+    --surface: #1D262D; --ground: #141B21;
+    --orange-soft: #33220F; --blue-soft: #10222F;
+    --green-soft: #1A2418; --red-soft: #2C1414;
+    --orange: #F5A04A; --blue: #4FA3DC; --success: #86BC79; --error: #E86B6A;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--f-body); font-size: 17px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 22px 90px; }
+
+  /* masthead */
+  .masthead { padding: 52px 0 26px; border-bottom: 4px solid var(--orange); }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: 11.5px; font-weight: 500;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--orange);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--f-display); font-weight: 400;
+    font-size: clamp(42px, 8vw, 68px); line-height: .95;
+    letter-spacing: .01em; margin: 0 0 16px; color: var(--ink);
+  }
+  .standfirst { font-size: 19px; line-height: 1.55; color: var(--ink-2); max-width: 60ch; margin: 0; }
+  .standfirst strong { color: var(--ink); font-weight: 500; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 22px;
+    font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .04em; color: var(--muted);
+  }
+  .meta b { color: var(--ink-2); font-weight: 500; }
+
+  /* nav */
+  .toc {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+    padding: 18px 22px; margin-top: 30px;
+  }
+  .toc-h { font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .13em;
+           text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 28px; }
+  .toc li { margin-bottom: 5px; font-size: 15px; break-inside: avoid; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover, .toc a:focus-visible { text-decoration: underline; }
+
+  section { padding-top: 46px; scroll-margin-top: 18px; }
+  h2 {
+    font-family: var(--f-display); font-weight: 400; font-size: 34px; line-height: 1.1;
+    letter-spacing: .01em; margin: 0 0 6px; color: var(--ink);
+  }
+  h3 { font-size: 19px; font-weight: 700; margin: 26px 0 8px; color: var(--ink); }
+  .sec-note { color: var(--muted); font-size: 15.5px; margin: 0 0 22px; max-width: 66ch; }
+  p { margin: 0 0 14px; }
+  a { color: var(--blue); }
+
+  /* step list */
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .steps > li {
+    background: var(--surface); border: 1px solid var(--line);
+    border-left: 4px solid var(--orange); border-radius: 0 6px 6px 0;
+    padding: 18px 22px 18px 62px; position: relative;
+  }
+  .steps > li::before {
+    counter-increment: s; content: counter(s);
+    position: absolute; left: 16px; top: 18px;
+    font-family: var(--f-mono); font-size: 13px; font-weight: 500;
+    color: var(--white); background: var(--orange);
+    width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 4px;
+  }
+  .steps h4 { font-size: 18px; font-weight: 700; margin: 0 0 5px; color: var(--ink); }
+  .steps p { font-size: 15.5px; line-height: 1.55; color: var(--ink-2); margin: 0 0 8px; }
+  .steps p:last-child { margin-bottom: 0; }
+  .steps strong { color: var(--ink); font-weight: 500; }
+  .who {
+    font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); display: block; margin-top: 9px;
+  }
+  .steps > li.stop { border-left-color: var(--error); background: var(--red-soft); }
+  .steps > li.stop::before { background: var(--error); }
+  .steps > li.stop h4 { color: var(--error); }
+  .steps > li.ee { border-left-color: var(--blue); }
+  .steps > li.ee::before { background: var(--blue); }
+
+  .tag {
+    display: inline-block; font-family: var(--f-mono); font-size: 9.5px; font-weight: 500;
+    letter-spacing: .1em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px;
+    background: var(--orange-soft); color: var(--orange); border: 1px solid var(--orange);
+    vertical-align: middle; margin-left: 8px;
+  }
+  .interim {
+    background: var(--orange-soft); border-left: 3px solid var(--orange);
+    padding: 11px 14px; border-radius: 0 4px 4px 0; margin: 10px 0 0;
+  }
+
+  /* callouts */
+  .callout {
+    border-radius: 6px; padding: 18px 22px; margin: 20px 0;
+    border: 1px solid var(--line); background: var(--surface);
+  }
+  .callout.key { background: var(--orange-soft); border-color: var(--orange); }
+  .callout.stopc { background: var(--red-soft); border-color: var(--error); }
+  .callout.info { background: var(--blue-soft); border-color: var(--blue); }
+  .callout.ok { background: var(--green-soft); border-color: var(--success); }
+  .callout .lbl {
+    font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .12em;
+    text-transform: uppercase; display: block; margin-bottom: 7px;
+  }
+  .callout.key .lbl { color: var(--orange); }
+  .callout.stopc .lbl { color: var(--error); }
+  .callout.info .lbl { color: var(--blue); }
+  .callout.ok .lbl { color: var(--success); }
+  .callout p { font-size: 15.5px; margin: 0 0 10px; color: var(--ink-2); }
+  .callout p:last-child { margin: 0; }
+  .callout strong { color: var(--ink); font-weight: 500; }
+
+  /* tables */
+  .scroller { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 15px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .11em;
+    text-transform: uppercase; color: var(--ink-2); background: var(--ground);
+    border-bottom: 2px solid var(--line-2); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td strong { color: var(--ink); font-weight: 500; }
+
+
+  /* check-in comparison */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  .vs .col { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); overflow: hidden; }
+  .vs .col.no { border-color: var(--error); }
+  .vs .col.yes { border-color: var(--success); }
+  .vs .ch {
+    font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .1em;
+    text-transform: uppercase; padding: 10px 16px; display: flex; gap: 8px; align-items: baseline;
+  }
+  .vs .col.no .ch  { background: var(--red-soft);   color: var(--error); }
+  .vs .col.yes .ch { background: var(--green-soft); color: var(--success); }
+  .vs .cb { padding: 4px 16px 16px; }
+  .vs dl { margin: 0; }
+  .vs dt {
+    font-family: var(--f-mono); font-size: 9.5px; font-weight: 500; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--muted); margin-top: 13px;
+  }
+  .vs dd { margin: 3px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-2); }
+  .vs .col.yes dd { color: var(--ink); }
+  .said { border: 1px dashed var(--line-2); border-radius: 6px; padding: 12px 18px; margin: 18px 0 4px; }
+  .said dt { color: var(--orange); }
+  @media (max-width: 680px) { .vs { grid-template-columns: 1fr; } }
+
+  /* faq */
+  .faq { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line);
+         border-radius: 6px; overflow: hidden; }
+  .faq details { background: var(--surface); }
+  .faq summary {
+    padding: 15px 20px; cursor: pointer; font-weight: 500; font-size: 16px; color: var(--ink);
+    list-style: none; display: flex; justify-content: space-between; gap: 14px; align-items: center;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; color: var(--orange); font-size: 20px; font-weight: 400; flex: none; }
+  .faq details[open] summary::after { content: '\2212'; }
+  .faq summary:hover { background: var(--ground); }
+  .faq summary:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+  .faq .a { padding: 0 20px 17px; font-size: 15.5px; color: var(--ink-2); line-height: 1.6; }
+  .faq .a p { margin: 0 0 10px; }
+  .faq .a p:last-child { margin: 0; }
+  .faq .a strong { color: var(--ink); font-weight: 500; }
+
+  ul.plain { margin: 0 0 14px; padding-left: 20px; }
+  ul.plain li { margin-bottom: 7px; color: var(--ink-2); font-size: 15.5px; }
+  ul.plain li strong { color: var(--ink); font-weight: 500; }
+
+  footer {
+    margin-top: 60px; padding-top: 22px; border-top: 1px solid var(--line);
+    font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); line-height: 1.8;
+  }
+  footer b { color: var(--ink-2); font-weight: 500; }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .steps > li { padding: 16px 18px 16px 56px; }
+  }
+  @media print {
+    body { background: #fff; }
+    .faq details { break-inside: avoid; }
+    .faq .a { display: block !important; }
+    .toc { display: none; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Einstein Moving · Frontline Manager Reference</p>
+    <h1>Hiring &amp; Onboarding<br>After Trial Days</h1>
+    <p class="standfirst">
+      The full walkthrough — <strong>from the in-person interview to week eight</strong> — plus what
+      changed, what didn't, and the answers to the questions managers have already asked.
+      The pulse gives you the steps; this page gives you the detail.
+    </p>
+    <div class="meta">
+      <span><b>Effective</b> October 1, 2026</span>
+      <span><b>Audience</b> BM · Ops · FM · Flex</span>
+      <span><b>Owners</b> Anne Bosse · Brian Herzig</span>
+      <span><b>Phase</b> 1 of 3</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <p class="toc-h">On this page</p>
+    <ol>
+      <li><a href="#why">Why we're doing this</a></li>
+      <li><a href="#changed">What changed, what didn't</a></li>
+      <li><a href="#walkthrough">The walkthrough, step by step</a></li>
+      <li><a href="#gates">The clearance gates</a></li>
+      <li><a href="#obday">Onboarding day</a></li>
+      <li><a href="#clocks">The two clocks</a></li>
+      <li><a href="#checkin">What a good check-in card looks like</a></li>
+      <li><a href="#termination">Ending it with someone</a></li>
+      <li><a href="#times">Response times</a></li>
+      <li><a href="#off">Offline in phase 1</a></li>
+      <li><a href="#faq">Questions managers asked</a></li>
+      <li><a href="#owed">What we owe you</a></li>
+    </ol>
+  </nav>
+
+  <section id="why">
+    <h2>Why we're doing this</h2>
+    <p>
+      Someone on a trial day is doing our work, on a customer's job, under our direction — and they
+      are not our employee. <strong>That's a legal exposure, and if they get hurt it gets worse.</strong>
+      That's the whole reason.
+    </p>
+    <p>
+      The clearances do the filtering the trial day used to do, and the free third on their first
+      field day gives you the same read you used to get — except now they're on payroll and covered.
+    </p>
+
+    <div class="callout info">
+      <span class="lbl">Optional deep dive</span>
+      <p>
+        If you want the big picture — the whole recruitment redesign, the current process against the
+        future one, and where the three phases land — Employee Experience has it here:
+        <strong><a href="https://einsteinadmin.github.io/einstein-trial-day-sunset-hq-451b7ae47b93/overview-88611e1663ae/">Trial
+        Day Sunset overview</a></strong>.
+      </p>
+      <p>You don't need it to run the process. Everything you have to do is on this page.</p>
+    </div>
+  </section>
+
+  <section id="changed">
+    <h2>What changed, what didn't</h2>
+    <p class="sec-note">
+      Most of this list is the right-hand column. The process you already run mostly stays put.
+    </p>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Area</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Trial days</strong></td><td><strong>Gone as of 10/1.</strong> The in-person interview is the hire decision.</td></tr>
+          <tr><td><strong>Phone screens</strong></td><td><strong>Changed.</strong> Employee Experience runs the culture interview now, not you.</td></tr>
+          <tr><td><strong>MVRs</strong></td><td><strong>Changed.</strong> Employee Experience runs them, before you ever meet the candidate. Your branch stops.</td></tr>
+          <tr><td><strong>Rippling entry</strong></td><td><strong>Changed.</strong> Employee Experience enters the new hire. Managers stay out of Rippling.</td></tr>
+          <tr><td><strong>Terminations</strong></td><td><strong>Changed.</strong> You submit a request; Employee Experience reviews it and processes it. You never term in Rippling.</td></tr>
+          <tr><td><strong>Mover bio</strong></td><td><strong>New.</strong> Collected inside Rippling onboarding. The Super Important Document form is retired.</td></tr>
+          <tr><td><strong>Onsite eval (stage 3)</strong></td><td><strong>Changed.</strong> No ride-along on onboarding day. The FM enters a date instead — see step 11.</td></tr>
+          <tr><td><strong>Free third</strong></td><td><strong>Now required</strong> on the first field day. Not a judgment call.</td></tr>
+          <tr><td>Background / drug screen / physical</td><td>Same as today. Employee Experience already tracks these and messages you daily.</td></tr>
+          <tr><td>Offer letter process</td><td>Same as today.</td></tr>
+          <tr><td>Onboarding day itself</td><td>Same as today, apart from the bio and the stage-3 change. Phase 2 redesigns it.</td></tr>
+          <tr><td>Your day-to-day with your movers</td><td>Unchanged.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="walkthrough">
+    <h2>The walkthrough, step by step</h2>
+    <p class="sec-note">
+      Start to finish, in the order it happens. Blue steps are Employee Experience's.
+      Red steps are hard stops.
+    </p>
+
+    <ol class="steps">
+      <li class="ee">
+        <h4>Screening and the culture interview</h4>
+        <p>Applications get graded and screened in ClearCompany. Employee Experience runs the
+        <strong>phone culture interview</strong> and scores it, and runs the <strong>MVR</strong>.
+        <strong>The MVR is normally cleared before you interview them</strong> — by the time a
+        candidate reaches you, driving record is already handled. You get handed the candidates worth
+        meeting.</p>
+        <span class="who">Employee Experience</span>
+      </li>
+
+      <li>
+        <h4>The in-person interview — you make the call</h4>
+        <p>Employee Experience books it on <strong>your own email calendar</strong>, not the branch
+        calendar, so check your calendar every workday. You run the interview and you decide.</p>
+        <p>The interview is now built on the competencies the mover role actually needs — teaching and
+        coaching, customer service, and the like.</p>
+        <p><strong>Ideally you offer the position the same day as the interview</strong> — that's step
+        4, and it's the version that wins candidates. <strong>But either way you must decide, hire or
+        not, within 3 business days.</strong> Three days is the outside limit, not the plan.</p>
+        <span class="who">You · same day ideally · 3 business days maximum</span>
+      </li>
+
+      <li>
+        <h4>If it's a no</h4>
+        <p>Thank them professionally for their time, tell them you're completing other interviews, and
+        that if we decide to move forward we'll be in touch. Then tell Employee Experience so the
+        candidate gets closed out properly.</p>
+        <span class="who">You</span>
+      </li>
+
+      <li>
+        <h4>If it's a go — offer it verbally, in the room</h4>
+        <p>“<em>We'd love to offer you the job and bring you onboard.</em>” Then walk them through
+        exactly what happens next so they leave knowing what's coming.</p>
+        <span class="who">You</span>
+      </li>
+
+      <li class="stop">
+        <h4>A verbal offer is not a hire. Do not start onboarding.</h4>
+        <p>They are not an employee until onboarding is complete. Until then they have
+        <strong>accepted an offer</strong> — that's what lets us onboard them later.
+        <strong>They cannot do any work for us in the offer-letter phase</strong>, and you cannot
+        onboard them at the interview.</p>
+        <p>This part has not changed. It was true before trial days went away and it's true now.</p>
+      </li>
+
+      <li>
+        <h4>Send the hiring request — same day</h4>
+        <p>Tag Employee Experience in the hiring request channel with the details: full time or part
+        time, the tentative start date, and anything else they need. They send the offer letter right
+        away — often within minutes, so keep the candidate around.</p>
+        <span class="who">You → Employee Experience</span>
+      </li>
+
+      <li>
+        <h4>They sign the offer letter before they leave</h4>
+        <p>Ideal state: the offer letter hits their email while they're still in your office, they
+        accept it there, and <strong>they fill out the background check form right then</strong>.</p>
+        <p>That second part matters more than it sounds — see the gates section below.</p>
+        <span class="who">You + the candidate, in office</span>
+      </li>
+
+      <li class="ee">
+        <h4>The gates run — and Employee Experience tracks them</h4>
+        <p>Background check, drug screen, physical. <strong>Nothing moves until all three come back
+        clean</strong> — no onboarding, no uniform, no hours. The MVR was cleared before the
+        interview, so these three are what you're actually waiting on.</p>
+        <p>You already get daily status messages on this and that doesn't change. What's new is that
+        we'll be explicit when a tentative date isn't going to hold, and propose the new one.</p>
+        <span class="who">Employee Experience · you get daily updates</span>
+      </li>
+
+      <li class="ee">
+        <h4>“Cleared — what day is he coming in?”</h4>
+        <p>When everything clears, Employee Experience tells you he's good to start and asks what day
+        you want him. <strong>You name the day</strong> — it can be sooner or later than the tentative
+        date. Then they enter him into Rippling. Takes them about five minutes.</p>
+        <span class="who">Employee Experience asks · you answer · they enter</span>
+      </li>
+
+      <li>
+        <h4>Onboarding day — run it the way you run it today</h4>
+        <p>Profile picture, schedule walkthrough, assign the training app, the onboarding training
+        checklist. Nothing new is added in Phase 1.</p>
+        <p><strong>Two things to watch:</strong> make sure they've completed their Rippling onboarding
+        (have a computer free in case they haven't), and make sure the <strong>mover bio</strong> is
+        filled in — it's a new field inside Rippling onboarding, and you can see and edit it.</p>
+        <span class="who">You · see the onboarding day section below</span>
+      </li>
+
+      <li>
+        <h4>Stage 3 — the FM enters an onsite date instead of running one</h4>
+        <p>You no longer take a new hire out on an onsite during onboarding day. Instead the FM picks
+        a date — <strong>ideally inside the new hire's first week</strong> — and enters it in the app.</p>
+        <p><strong>Entering that date is what unlocks stage 4</strong>, so the mover can start earning
+        signatures immediately instead of waiting on a ride-along. The date doubles as the FM's own
+        reminder to go do it.</p>
+        <p>No Field Manager at your branch? The field steps stay with the BM and Ops.</p>
+        <span class="who">FM · or BM/Ops where there's no FM</span>
+      </li>
+
+      <li>
+        <h4>First scheduled field day — they ride as a free third</h4>
+        <p>Required, not a judgment call. If they get out there and physically tap out, or decide
+        mid-move this isn't for them, <strong>your lead isn't left short-handed on a live job.</strong></p>
+        <span class="who">You schedule it · whoever's onsite runs the day</span>
+      </li>
+
+      <li>
+        <h4>Check in the next day</h4>
+        <p>Two days at the outside. How'd it go, did they like it, any issues, are they good for the
+        next shift?</p>
+        <span class="who">Whoever is onsite</span>
+      </li>
+
+      <li>
+        <h4>From day two, schedule them like a normal mover</h4>
+        <p>Use judgment on the ramp — three days instead of five if the physical side isn't there yet,
+        and keep them on 3-, 4- and 5-person crews for a while. <strong>Give them enough days in the
+        first two weeks to get a real read.</strong></p>
+        <span class="who">You</span>
+      </li>
+
+      <li>
+        <h4>Week 1 check-in</h4>
+        <p>Redirect anything that's behind, and <strong>write it down</strong>. A redirect that only
+        happened out loud doesn't exist in week two.</p>
+        <p>What that should look like: <a href="#checkin">What a good check-in card looks like</a>.</p>
+        <span class="who">You</span>
+      </li>
+
+      <li>
+        <h4>The FM runs the onsite</h4>
+        <p>On the date set back at onboarding — inside that first week.</p>
+        <span class="who">FM</span>
+      </li>
+
+      <li class="stop">
+        <h4>Week 2 check-in — the decision point</h4>
+        <p>Still behind means a formal Rippling warning and a keep-or-go call.
+        <strong>Inside 14 days is the cheapest, cleanest exit we'll ever have.</strong></p>
+        <p>See “Ending it with someone” below for how that actually runs.</p>
+        <span class="who">You decide · Employee Experience processes</span>
+      </li>
+
+      <li>
+        <h4>Week 4 — same call again</h4>
+        <p>Behind is still behind. Redirect, document, or make the keep-or-go call.</p>
+        <span class="who">You</span>
+      </li>
+
+      <li>
+        <h4>Week 8 — the look-back</h4>
+        <p><strong>This one is a different conversation.</strong> At two months we look back at how
+        they've done and decide whether we're offering them a <strong>full-time position with
+        benefits</strong>.</p>
+        <p>So the weeks in between matter for more than just keeping them — your check-in notes are
+        what that decision gets made on. After week 8 they're a mover in the field, managed like
+        anyone else.</p>
+        <span class="who">You · with Employee Experience</span>
+      </li>
+    </ol>
+  </section>
+
+  <section id="gates">
+    <h2>The clearance gates</h2>
+    <p class="sec-note">
+      <strong>Before you interview:</strong> the MVR, run by Employee Experience.
+      <strong>After the offer:</strong> background check · drug screen · physical (HPE) at Concentra.
+    </p>
+
+    <div class="callout key">
+      <span class="lbl">The one thing worth knowing</span>
+      <p>
+        <strong>The background check is the first gate, and it gates the other two.</strong> It's what
+        tells us where the candidate lives, which is how Concentra gets assigned and how the
+        e-passports get generated for the drug screen and the physical.
+      </p>
+      <p>
+        That's why <strong>getting them to fill out the background check before they leave your office
+        matters</strong>. The single biggest cause of a slow start has been candidates sitting on that
+        form.
+      </p>
+    </div>
+
+    <h3>The HPE — what replaced the trial day</h3>
+    <p>
+      The physical is a <strong>Human Potential Evaluation</strong>, built with Concentra around the
+      actual physical demands of the mover job. That's the piece doing the work the trial day used to
+      do — <strong>a real read on whether someone can physically do this</strong>, except it's a
+      third party measuring against a defined standard instead of a crew's gut call at the end of a
+      long day.
+    </p>
+    <p>
+      It's the same evaluation for every candidate at every branch, and it happens
+      <strong>after</strong> the offer rather than before it. That ordering is the whole point: no
+      one works a real move for us before they're hired.
+    </p>
+
+    <h3>What the candidate actually does</h3>
+    <ul class="plain">
+      <li>Accepts the offer letter, then <strong>fills out the background check</strong> — ideally in your office.</li>
+      <li>Waits on <strong>two e-passports</strong>: one for the drug screen, one for the physical.</li>
+      <li><strong>Both go to Concentra</strong> — same place, two different doors.</li>
+      <li>Realistically this lands <strong>the next day</strong>, because the e-passports generate after the background check is in.</li>
+    </ul>
+
+    <h3>The tentative start date</h3>
+    <p>
+      Set it <strong>5 days out from the interview</strong>. That's the buffer for everything to come
+      back. It's a planning date, not a promise — it moves in both directions:
+    </p>
+    <ul class="plain">
+      <li><strong>Clears early?</strong> Employee Experience will flag it and ask if you want the day sooner. Your call — take it or hold your date.</li>
+      <li><strong>Won't clear in time?</strong> They'll tell you before the date, not on it, and propose a new one.</li>
+      <li><strong>Can't make the day yourself?</strong> Push it and tell them. That's fine.</li>
+    </ul>
+    <p>
+      Some backgrounds just take longer — multiple counties, or out-of-state. That's normal and it's
+      why the buffer exists.
+    </p>
+  </section>
+
+  <section id="obday">
+    <h2>Onboarding day</h2>
+
+    <div class="callout info">
+      <span class="lbl">New this round</span>
+      <p>
+        <strong>The mover bio.</strong> It's a field inside Rippling onboarding now — every new hire
+        writes a short bio, and there's a hover link to our website so they can see what everyone
+        else's looks like. <strong>You can see it and edit it</strong> if it needs a nudge.
+      </p>
+      <p>
+        The <strong>Super Important Document form is retired</strong> — everything on it is already
+        captured elsewhere, and the bio was the only piece that wasn't.
+      </p>
+    </div>
+
+    <h3>Rippling onboarding — set expectations, don't set a rule</h3>
+    <p>
+      New hires get their Rippling onboarding link ahead of the day, and we encourage them to work
+      through it early. <strong>We can't require it</strong> — it's technically work, and they're not
+      on the clock yet.
+    </p>
+    <p>
+      So plan for the realistic version: <strong>have a computer free on onboarding day.</strong> Most
+      people won't have finished — nobody wants to look up their bank details on a branch computer —
+      and you'll get a notification once they start the process.
+    </p>
+    <p>
+      An easy habit: <em>while you're taking their picture, ask whether they got through their
+      Rippling onboarding and filled in their bio.</em>
+    </p>
+  </section>
+
+  <section id="clocks">
+    <h2>The two clocks</h2>
+    <div class="callout key">
+      <span class="lbl">Read this twice</span>
+      <p>
+        <strong>Training runs on days worked. The decision to separate runs on the calendar —
+        14 days from the start date, and the benefits look-back at 8 weeks.</strong>
+      </p>
+      <p>
+        A part-timer who has only worked three days by day 14 is <em>still</em> on the 14-day clock.
+        That's why step 14 says get them enough days: if you don't, you'll hit the decision point
+        without enough to decide on.
+      </p>
+    </div>
+  </section>
+
+
+  <section id="checkin">
+    <h2>What a good check-in card looks like</h2>
+    <p class="sec-note">
+      This is the week-1 and week-2 conversation, and it's the paper trail everything in the next
+      section depends on. A quick reference — not a report.
+    </p>
+
+    <h3>Best practices</h3>
+    <ul class="plain">
+      <li><strong>Answer what they actually wrote.</strong> If they named something under “where they
+      need support,” your card says what you did about it. Writing “no feedback” when they gave you
+      feedback is the single most common failure.</li>
+      <li><strong>Ask a lead before you sit down.</strong> That's what turns peer feedback from “zero
+      negative feedback” into a real answer. One conversation, same effort.</li>
+      <li><strong>Attendance is the numbers. Expectations is what happens next.</strong> Don't spend
+      both boxes on the same late.</li>
+      <li><strong>Put a date on it.</strong> “Stage 4 done by 10/15” is something they can be held to
+      and you can follow up on. “Stays to an absolute minimum” is not.</li>
+      <li><strong>Write it the same day.</strong> A redirect that only happened out loud doesn't
+      exist in week two.</li>
+    </ul>
+
+    <h3>The same check-in, written two ways</h3>
+    <p>
+      Same mover, same week, same five answers from him. <strong>The good card isn't much longer, and
+      it took the same sit-down.</strong>
+    </p>
+
+    <div class="said">
+      <dl>
+        <dt>What the mover wrote</dt>
+        <dd>
+          Role satisfaction <strong>5</strong> · Role matches expectations <strong>5</strong> ·
+          What's going well: <em>“Team work.”</em> · Where they need support: <em>“Rippling.”</em>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="vs">
+      <div class="col no">
+        <div class="ch"><span>&#10007;</span> A weak card</div>
+        <div class="cb"><dl>
+          <dt>Attendance</dt>
+          <dd>Has used 1/8 lates, 0.5/4 call outs, no trends</dd>
+          <dt>Handbook progression</dt>
+          <dd>Has a solid velocity and has not been locked out</dd>
+          <dt>Peer feedback</dt>
+          <dd>Zero negative feedback</dd>
+          <dt>Acknowledge their feedback</dt>
+          <dd>No feedback from [mover]</dd>
+          <dt>Expectations going forward</dt>
+          <dd>Was late for the first time this morning, moving forward the expectation is that this
+          stays to an absolute minimum</dd>
+        </dl></div>
+      </div>
+
+      <div class="col yes">
+        <div class="ch"><span>&#10003;</span> A good card</div>
+        <div class="cb"><dl>
+          <dt>Attendance</dt>
+          <dd>1 of 8 late points, 0.5 of 4 callouts, no trend. The late was this morning and it's his
+          first — not a pattern yet, and I told him that.</dd>
+          <dt>Handbook progression</dt>
+          <dd>36% through Stage 4, no lockouts, velocity 1.0 tasks a day. That's on pace for the
+          quarter if he holds it.</dd>
+          <dt>Peer feedback</dt>
+          <dd>Asked his lead before we sat down — nothing negative, said he's easy to work with on a
+          truck. Passed that on to him.</dd>
+          <dt>Acknowledge their feedback</dt>
+          <dd>He said he needs support with Rippling. Walked him through clocking in and finding his
+          schedule on the iPad today, and sent him the how-to. If it happens again he texts me before
+          his shift, not after.</dd>
+          <dt>Expectations going forward</dt>
+          <dd>Keep the on-time record clean — one late in three weeks is fine, two more is a
+          conversation. Stay at a task a day so Stage 4 is done by 10/15. Next check-in we talk about
+          shadowing a lead.</dd>
+        </dl></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="termination">
+    <h2>Ending it with someone</h2>
+    <p class="sec-note">This one changed, and it changed in your favour. Read it before you need it.</p>
+
+    <div class="callout stopc">
+      <span class="lbl">Do not do this</span>
+      <p>
+        <strong>Don't term anyone in Rippling, and don't end it in person first.</strong> Managers are
+        coming out of Rippling for this entirely.
+      </p>
+      <p>
+        The old way had it backwards — you'd process someone out, and only then find out the
+        documentation wasn't there.
+      </p>
+    </div>
+
+    <h3>How it runs now</h3>
+    <ol class="steps">
+      <li>
+        <h4>You submit a termination request <span class="tag">Process pending</span></h4>
+        <p>Same idea as a hiring request — one place, every time. Say who, and why.</p>
+        <div class="interim">
+          <p style="margin:0"><strong>Until that's built:</strong> DM your Regional Manager and
+          Employee Experience to talk the termination through and get approval. Don't wait for a
+          form — just don't act before you've had that conversation.</p>
+        </div>
+        <span class="who">You</span>
+      </li>
+      <li class="ee">
+        <h4>Employee Experience reviews the documentation</h4>
+        <p>They look at what's on file: write-ups, redirects, documented expectations. If there's a
+        terminable offense and the paper trail is there, it moves. <strong>If there's nothing
+        documented, it gets denied</strong> — and that's the whole point of writing redirects down in
+        week one.</p>
+        <span class="who">Employee Experience</span>
+      </li>
+      <li class="ee">
+        <h4>Approved — you agree the day</h4>
+        <p>They'll ask when you're having the conversation, so the system side closes out on the same
+        day you do it.</p>
+        <span class="who">Employee Experience + you</span>
+      </li>
+      <li>
+        <h4>You have the conversation</h4>
+        <p>Then collect what needs collecting — tool bag, shirts, anything branch-side.</p>
+        <span class="who">You</span>
+      </li>
+      <li class="ee">
+        <h4>Employee Experience processes it in Rippling</h4>
+        <p>They entered the person, they take them out.</p>
+        <span class="who">Employee Experience</span>
+      </li>
+    </ol>
+
+    <div class="callout ok">
+      <span class="lbl">The short version</span>
+      <p>
+        <strong>A termination should never be a surprise to the mover, and it should never be a
+        surprise to us either.</strong> If you've documented the redirects, this is quick. If you
+        haven't, it isn't — and that's the system working.
+      </p>
+      <p>
+        <strong>Safety or serious conduct</strong> is the exception to the pace, not to the process:
+        call Employee Experience first, same day.
+      </p>
+    </div>
+  </section>
+
+  <section id="times">
+    <h2>Response times</h2>
+    <p class="sec-note">
+      <strong>These start October 1 with everything else</strong>, and they run both ways — Employee
+      Experience is holding to theirs so candidates don't go cold. We're starting them now, while
+      hiring is slow, so the habit is built before busy season.
+    </p>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Step</th><th>Target</th><th>Max</th></tr></thead>
+        <tbody>
+          <tr><th colspan="3" style="background:var(--surface);border-bottom:1px solid var(--line);color:var(--orange)">Employee Experience</th></tr>
+          <tr><td>Application in → pre-screen done</td><td>1 business day</td><td>2</td></tr>
+          <tr><td>Your go-ahead → culture interview scheduled</td><td>&mdash;</td><td>2 business days</td></tr>
+          <tr><td>Passes the culture interview → in-person booked with you</td><td>&mdash;</td><td>2 business days</td></tr>
+          <tr><td>Req closed → every other candidate told</td><td colspan="2">Same day</td></tr>
+          <tr><th colspan="3" style="background:var(--surface);border-bottom:1px solid var(--line);color:var(--orange)">You, the hiring manager</th></tr>
+          <tr><td>Yes/no on a screened candidate</td><td>1 business day</td><td>2</td></tr>
+          <tr><td>Hire decision after your in-person interview</td><td><strong>Same day</strong></td><td>3 business days</td></tr>
+          <tr><td>Employee Experience follows up and hears nothing</td><td colspan="2">Escalates at 2 business days</td></tr>
+          <tr><td><strong>Application → final decision, all in</strong></td><td colspan="2"><strong>10 business days</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:14px">
+      All times are business days. <strong>The 10-day number is a backstop, not a goal</strong> — a
+      candidate who crosses it is a signal to act, not a paperwork miss.
+    </p>
+    <p style="margin-top:16px">
+      <strong>Check your own email and calendar every workday</strong> — that's where interviews land.
+      If you can't run one, hand it to someone on your branch leadership team and tell Employee
+      Experience so the scorecard follows the right person.
+    </p>
+  </section>
+
+  <section id="off">
+    <h2>Offline in phase 1</h2>
+    <p class="sec-note">Not your job right now. Don't go looking for these and don't feel behind.</p>
+    <ul class="plain">
+      <li><strong>The onboarding-day onsite ride-along with the FM.</strong> No capacity for it. Step 11 replaces it, and the app is being updated to match.</li>
+      <li><strong>The redesigned onboarding day</strong> — a proper Employee Experience session, culture module, half-day structure. That's <strong>Phase 2</strong>.</li>
+      <li><strong>Set onboarding days per branch.</strong> That's <strong>Phase 3</strong>, and it comes last on purpose — you can't lock a time block until you know what fills it.</li>
+    </ul>
+    <div class="callout key">
+      <span class="lbl">The rule</span>
+      <p><strong>If something isn't covered here, ask before you invent it.</strong></p>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2>Questions managers asked</h2>
+    <p class="sec-note">Real questions from the first walkthroughs. If yours isn't here, put it in the comments on the pulse.</p>
+
+    <div class="faq">
+      <details>
+        <summary>Isn't the free third just a trial day with extra steps?</summary>
+        <div class="a"><p>The day looks similar. The difference is the one that matters: <strong>they're on payroll, they're covered, and they're ours.</strong> A trial day was unpaid work by a non-employee on a customer's job. That's the exposure we're closing.</p></div>
+      </details>
+      <details>
+        <summary>Can I offer someone the job and start onboarding them at the interview?</summary>
+        <div class="a"><p><strong>No.</strong> You can offer verbally in the room — that's encouraged. But onboarding can't start until the offer letter is accepted and the background check, drug screen and physical are all clean. <strong>This hasn't changed</strong>; it was the rule before trial days went away too.</p></div>
+      </details>
+      <details>
+        <summary>This is more onboarding work than before, isn't it?</summary>
+        <div class="a"><p><strong>Yes, and we're not going to pretend otherwise.</strong> You used to onboard only the people who survived a trial day. Now everyone you offer gets onboarded before they touch a truck.</p><p>Two things make it workable: the physical filters out some people who were never going to make it, and we're starting in a slow hiring window. <strong>If the workload is what breaks, that's the feedback we want first.</strong></p></div>
+      </details>
+      <details>
+        <summary>How do I know the gates cleared and I can actually bring them in?</summary>
+        <div class="a"><p>Employee Experience tells you — you already get daily status messages and that continues. When everything clears they'll say he's good to start and <strong>ask you what day you want him in</strong>.</p><p>If your tentative date is coming up and you haven't heard, ask. Don't schedule an onboarding against gates that haven't cleared.</p></div>
+      </details>
+      <details>
+        <summary>How long do the gates usually take?</summary>
+        <div class="a"><p>Budget <strong>5 days from interview to onboarding</strong> and set the tentative date there. The background check is usually the long pole — multiple counties or out-of-state takes longer. Drug screen and physical are generally next-day once the e-passports generate.</p></div>
+      </details>
+      <details>
+        <summary>Do I still run MVRs?</summary>
+        <div class="a"><p><strong>No.</strong> Employee Experience runs them as of 10/1 — and they run it <strong>before</strong> the in-person interview, as part of screening. It isn't one of the things you wait on after the offer.</p></div>
+      </details>
+      <details>
+        <summary>Who enters the new hire into Rippling?</summary>
+        <div class="a"><p><strong>Employee Experience.</strong> Not you. It takes them about five minutes once you've told them the start day.</p></div>
+      </details>
+      <details>
+        <summary>What if they haven't finished their Rippling onboarding when they show up?</summary>
+        <div class="a"><p>Expect it. <strong>Have a computer free.</strong> We send the link ahead and encourage them to work through it, but we can't require it before they're on the clock — so most people arrive partway through.</p></div>
+      </details>
+      <details>
+        <summary>Step 11 says “stage 3.” Is that step 3 on the list or stage 3 in the app?</summary>
+        <div class="a"><p><strong>Stage 3 in the training app</strong> — the on-site field training. Not step 3 on this page. The steps on this page are the order of the process; the stages are the app's own numbering.</p></div>
+      </details>
+      <details>
+        <summary>Do I still collect two forms of ID at the interview?</summary>
+        <div class="a"><p><strong>No — identity documents are part of onboarding, not the interview.</strong> The Super Important Document form is retired; the I-9 and identity verification happen through Rippling onboarding once they've accepted the offer.</p></div>
+      </details>
+      <details>
+        <summary>Can I fire someone in Rippling?</summary>
+        <div class="a"><p><strong>No.</strong> Submit a termination request, wait for Employee Experience to approve it, then have the conversation. They process the Rippling side. See <a href="#termination">Ending it with someone</a>.</p></div>
+      </details>
+      <details>
+        <summary>What happens to someone who was mid-process on 10/1?</summary>
+        <div class="a"><p><strong>No trial day runs on or after 10/1</strong>, full stop. Anyone mid-process picks up these steps from wherever they are.</p></div>
+      </details>
+      <details>
+        <summary>My branch hires twenty at a time. Leander hires two. Does this scale?</summary>
+        <div class="a"><p>The steps are the same everywhere; <strong>who runs them isn't.</strong> Where there's a Field Manager, the field pieces go to them. Where there isn't, they stay with the BM and Ops. Branch size is most of the reason Phase 3 exists.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <section id="owed">
+    <h2>What we owe you</h2>
+    <ul class="plain">
+      <li><strong>The training app updated</strong> so stage 3 reads as “set a date,” not “run a ride-along.”</li>
+      <li><strong>The current onboarding training checklist</strong>, linked here, so nobody's working from an old copy.</li>
+      <li><strong>The termination request form</strong> and where it lands.</li>
+    </ul>
+    <div class="callout ok">
+      <span class="lbl">One more thing</span>
+      <p>
+        This is a big shift and <strong>it will break somewhere.</strong> When it does, tell us early
+        instead of quietly working around it — the workarounds are what we're trying to get rid of.
+        <strong>Phase 2 gets built on your feedback.</strong>
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <b>Phase 1 of 3.</b> Phase 2 redesigns the onboarding day. Phase 3 sets onboarding days per branch.<br>
+    <b>Owners:</b> Anne Bosse (Employee Experience) · Brian Herzig (CTXH) · Mike Vandenbroader (DFWT).<br>
+    <b>Questions or things that break:</b> comment on the Delegation Board pulse so everyone sees the answer.
+  </footer>
+
+</div>
+
+</body>
+</html>
